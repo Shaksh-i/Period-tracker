@@ -1,46 +1,152 @@
-import React from 'react';
-import { AppBar, Toolbar, Typography, Button, Container, Box } from '@mui/material';
-import { styled } from '@mui/system';
-
-const Logo = styled('img')({
-  height: 40,
-  marginRight: 10,
-});
+import React from "react";
+import { AppBar, Toolbar, Typography, Button, Box } from "@mui/material";
+import { useNavigate } from "react-router-dom";
 
 const DashboardPage = () => {
+  const navigate = useNavigate();
+
   return (
-    <>
-      {/* Top Navigation Bar */}
-      <AppBar position="static" color="primary">
-        <Toolbar>
-          <Logo src="/logo.png" alt="App Logo" />
-          <Typography variant="h6" sx={{ flexGrow: 1 }}>
-            Period Tracker & Care App
-          </Typography>
-          <Button color="inherit">Login</Button>
-          <Button color="inherit">Sign Up</Button>
+    <Box
+      sx={{
+        width: "100vw",
+        height: "100vh",
+        bgcolor: "#fff",
+        display: "flex",
+        flexDirection: "column",
+        overflowX: "hidden",
+      }}
+    >
+      {/* Header */}
+      <AppBar
+        position="static"
+        sx={{
+          bgcolor: "#ff7eb9",
+          width: "100%",
+          boxShadow: "none",
+        }}
+      >
+        <Toolbar
+          sx={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            px: { xs: 2, sm: 6 },
+          }}
+        >
+          {/* Logo + App Name */}
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              cursor: "pointer",
+            }}
+            onClick={() => navigate("/")}
+          >
+            <img
+              src="/logo.png"
+              alt="App Logo"
+              style={{ height: 40, marginRight: 10 }}
+            />
+            <Typography
+              variant="h6"
+              sx={{
+                fontWeight: "bold",
+                color: "#fff",
+                fontStyle: "italic",
+                fontFamily: "'Poppins', sans-serif",
+              }}
+            >
+              HerSync
+            </Typography>
+          </Box>
+
+          <Box>
+            <Button
+              variant="contained"
+              onClick={() => navigate("/login")}
+              sx={{
+                mr: 2,
+                backgroundColor: "#fff",
+                color: "#ff7eb9",
+                fontWeight: "bold",
+                "&:hover": { backgroundColor: "#ffe6f0" },
+              }}
+            >
+              Login
+            </Button>
+            <Button
+              variant="contained"
+              onClick={() => navigate("/signup")}
+              sx={{
+                backgroundColor: "#a8f0d6",
+                color: "#fff",
+                fontWeight: "bold",
+                "&:hover": { backgroundColor: "#7ee0c0" },
+              }}
+            >
+              Sign Up
+            </Button>
+          </Box>
         </Toolbar>
       </AppBar>
 
-      {/* Welcome Message */}
-      <Container maxWidth="md">
-        <Box
-          display="flex"
-          flexDirection="column"
-          alignItems="center"
-          justifyContent="center"
-          height="80vh"
-          textAlign="center"
+      {/* Main Section */}
+      <Box
+        sx={{
+          flexGrow: 1,
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          flexDirection: "column",
+          px: 2,
+          textAlign: "center",
+        }}
+      >
+        <Typography
+          variant="h4"
+          sx={{
+            fontWeight: "bold",
+            color: "#333",
+            mb: 2,
+            fontFamily: "'Poppins', sans-serif",
+          }}
         >
-          <Typography variant="h4" gutterBottom>
-            Welcome to Your Personal Health Companion
-          </Typography>
-          <Typography variant="body1">
-            Track your cycles, manage symptoms, and stay on top of your wellness journey.
-          </Typography>
-        </Box>
-      </Container>
-    </>
+          Welcome to <span style={{ color: "#ff7eb9", fontStyle: "italic" }}>HerSync</span>
+        </Typography>
+
+        <Typography
+          variant="body1"
+          sx={{
+            color: "#555",
+            maxWidth: "600px",
+            fontFamily: "'Poppins', sans-serif",
+          }}
+        >
+          Track your cycle, predict ovulation, and get personalized health insights.
+        </Typography>
+      </Box>
+
+      {/* Footer */}
+      <Box
+        sx={{
+          py: 2,
+          bgcolor: "#fff3f8",
+          textAlign: "center",
+          width: "100%",
+        }}
+      >
+        <Typography
+          variant="body2"
+          sx={{
+            color: "#888",
+            fontStyle: "italic",
+            fontFamily: "'Poppins', sans-serif",
+          }}
+        >
+          © 2025 <span style={{ color: "#ff7eb9" }}>HerSync</span>. All rights reserved.
+        </Typography>
+      </Box>
+    </Box>
   );
 };
 
