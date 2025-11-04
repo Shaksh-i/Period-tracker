@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Box,
   Typography,
@@ -10,35 +10,73 @@ import {
 } from "@mui/material";
 import { Delete } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
-import Header from "../components/Header"; // ✅ Added
+import Header from "../components/Header";
 
 const MedicationReminder = () => {
   const navigate = useNavigate();
-  const [reminders, setReminders] = useState([
-    { id: 1, name: "Iron Supplement", time: "08:00 AM", notes: "After breakfast" },
-    { id: 2, name: "Pain Relief Tablet", time: "09:00 PM", notes: "If cramps occur" },
-  ]);
-
+  const [reminders, setReminders] = useState([]);
   const [newReminder, setNewReminder] = useState({
-    name: "",
+    medication: "",
     time: "",
     notes: "",
   });
 
+  const token = localStorage.getItem("token"); // ✅ store token from login
+
+  // ✅ Fetch reminders
+  useEffect(() => {
+    fetch("http://127.0.0.1:5000/api/reminders/", {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        if (Array.isArray(data)) setReminders(data);
+      })
+      .catch((err) => console.error("Error fetching reminders:", err));
+  }, [token]);
+
+  // ✅ Add new reminder
   const handleAdd = () => {
-    if (newReminder.name && newReminder.time) {
-      setReminders([...reminders, { id: Date.now(), ...newReminder }]);
-      setNewReminder({ name: "", time: "", notes: "" });
+    if (!newReminder.medication || !newReminder.time) {
+      alert("Please enter both medicine name and time!");
+      return;
     }
+
+    fetch("http://127.0.0.1:5000/api/reminders/", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(newReminder),
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        setReminders([...reminders, data]);
+        setNewReminder({ medication: "", time: "", notes: "" });
+      })
+      .catch((err) => console.error("Error adding reminder:", err));
   };
 
+  // ✅ Delete reminder
   const handleDelete = (id) => {
-    setReminders(reminders.filter((r) => r.id !== id));
+    fetch(`http://127.0.0.1:5000/api/reminders/${id}/`, {
+      method: "DELETE",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    })
+      .then(() => {
+        setReminders(reminders.filter((r) => r.id !== id));
+      })
+      .catch((err) => console.error("Error deleting reminder:", err));
   };
 
   return (
     <>
-      <Header /> {/* ✅ Added header */}
+      <Header />
       <Box
         sx={{
           width: "100vw",
@@ -51,7 +89,6 @@ const MedicationReminder = () => {
           p: 3,
         }}
       >
-        {/* Main Card */}
         <Paper
           elevation={4}
           sx={{
@@ -72,15 +109,15 @@ const MedicationReminder = () => {
             Medication Reminder
           </Typography>
 
-          {/* Add Reminder Section */}
+          {/* Add Reminder Form */}
           <Grid container spacing={2} sx={{ mb: 3 }}>
             <Grid item xs={12} sm={6}>
               <TextField
                 label="Medicine Name"
                 fullWidth
-                value={newReminder.name}
+                value={newReminder.medication}
                 onChange={(e) =>
-                  setNewReminder({ ...newReminder, name: e.target.value })
+                  setNewReminder({ ...newReminder, medication: e.target.value })
                 }
               />
             </Grid>
@@ -141,7 +178,7 @@ const MedicationReminder = () => {
             >
               <Box>
                 <Typography sx={{ fontWeight: "bold", color: "#333" }}>
-                  {reminder.name}
+                  {reminder.medication}
                 </Typography>
                 <Typography variant="body2" sx={{ color: "#666" }}>
                   ⏰ {reminder.time}
@@ -159,7 +196,7 @@ const MedicationReminder = () => {
           ))}
         </Paper>
 
-        {/* ✅ Back Button */}
+        {/* Back Button */}
         <Button
           variant="outlined"
           sx={{

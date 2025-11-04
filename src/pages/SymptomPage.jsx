@@ -1,15 +1,25 @@
 import React, { useState } from "react";
-import { Box, Typography, Button, Paper, TextField, Grid } from "@mui/material";
+import {
+  Box,
+  Typography,
+  Paper,
+  Button,
+  TextField,
+  Grid,
+  Slider,
+  MenuItem,
+} from "@mui/material";
 import { useNavigate } from "react-router-dom";
-import Header from "../components/Header"; // ✅ Added header
+import Header from "../components/Header";
+import axios from "axios";
 
 const SymptomPage = () => {
   const navigate = useNavigate();
 
   const [formData, setFormData] = useState({
-    mood: "",
-    cramps: "",
-    flow: "",
+    date: new Date().toISOString().split("T")[0],
+    symptom: "",
+    severity: 3,
     notes: "",
   });
 
@@ -17,21 +27,38 @@ const SymptomPage = () => {
     setFormData({ ...formData, [field]: value });
   };
 
-  const handleSubmit = () => {
-    console.log("Submitted Data:", formData);
+  const handleSubmit = async () => {
+    try {
+      const userEmail = localStorage.getItem("userEmail"); // or from context/auth
+      const res = await axios.post("http://127.0.0.1:5000/symptoms", {
+        email: userEmail,
+        date: formData.date,
+        symptom: formData.symptom,
+        severity: formData.severity,
+        notes: formData.notes,
+      });
+
+      alert("Symptom logged successfully!");
+      console.log("Response:", res.data);
+      navigate("/home");
+    } catch (err) {
+      console.error("Error submitting symptom:", err);
+      alert("Failed to log symptom");
+    }
   };
 
   return (
     <>
-      <Header /> {/* ✅ Added header */}
+      <Header />
       <Box
         sx={{
           width: "100vw",
-          height: "100vh",
+          minHeight: "100vh",
           bgcolor: "#c8f7c5",
           display: "flex",
           justifyContent: "center",
           alignItems: "center",
+          py: 4,
         }}
       >
         <Paper
@@ -41,141 +68,80 @@ const SymptomPage = () => {
             p: 5,
             borderRadius: 3,
             width: "80%",
-            maxWidth: "900px",
-            minHeight: "70vh",
-            display: "flex",
-            flexDirection: "column",
-            justifyContent: "space-between",
+            maxWidth: "800px",
           }}
         >
-          <Box>
-            <Typography
-              variant="h5"
-              align="center"
-              sx={{ mb: 4, fontWeight: "bold", color: "#2e7d32" }}
-            >
-              Log Your Daily Symptoms
-            </Typography>
+          <Typography
+            variant="h5"
+            align="center"
+            sx={{ mb: 4, fontWeight: "bold", color: "#2e7d32" }}
+          >
+            Log Your Symptom
+          </Typography>
 
-            <Grid container spacing={4}>
-              {/* Mood */}
-              <Grid item xs={12} sm={4}>
-                <Typography variant="subtitle1" sx={{ fontWeight: 500, mb: 1 }}>
-                  Mood
-                </Typography>
-                <Box>
-                  {["Happy", "Tired", "Irritable"].map((mood) => (
-                    <Button
-                      key={mood}
-                      variant={formData.mood === mood ? "contained" : "outlined"}
-                      onClick={() => handleChange("mood", mood)}
-                      sx={{
-                        m: 0.5,
-                        borderColor: "#7FB77E",
-                        color: formData.mood === mood ? "#fff" : "#7FB77E",
-                        backgroundColor:
-                          formData.mood === mood ? "#7FB77E" : "transparent",
-                        "&:hover": {
-                          backgroundColor:
-                            formData.mood === mood
-                              ? "#6fa86e"
-                              : "rgba(127,183,126,0.1)",
-                        },
-                      }}
-                    >
-                      {mood}
-                    </Button>
-                  ))}
-                </Box>
-              </Grid>
-
-              {/* Cramps */}
-              <Grid item xs={12} sm={4}>
-                <Typography variant="subtitle1" sx={{ fontWeight: 500, mb: 1 }}>
-                  Cramps
-                </Typography>
-                <Box>
-                  {["None", "Mild", "Moderate", "Severe"].map((cramp) => (
-                    <Button
-                      key={cramp}
-                      variant={formData.cramps === cramp ? "contained" : "outlined"}
-                      onClick={() => handleChange("cramps", cramp)}
-                      sx={{
-                        m: 0.5,
-                        borderColor: "#7FB77E",
-                        color: formData.cramps === cramp ? "#fff" : "#7FB77E",
-                        backgroundColor:
-                          formData.cramps === cramp ? "#7FB77E" : "transparent",
-                        "&:hover": {
-                          backgroundColor:
-                            formData.cramps === cramp
-                              ? "#6fa86e"
-                              : "rgba(127,183,126,0.1)",
-                        },
-                      }}
-                    >
-                      {cramp}
-                    </Button>
-                  ))}
-                </Box>
-              </Grid>
-
-              {/* Flow */}
-              <Grid item xs={12} sm={4}>
-                <Typography variant="subtitle1" sx={{ fontWeight: 500, mb: 1 }}>
-                  Flow
-                </Typography>
-                <Box>
-                  {["Light", "Medium", "Heavy"].map((flow) => (
-                    <Button
-                      key={flow}
-                      variant={formData.flow === flow ? "contained" : "outlined"}
-                      onClick={() => handleChange("flow", flow)}
-                      sx={{
-                        m: 0.5,
-                        borderColor: "#7FB77E",
-                        color: formData.flow === flow ? "#fff" : "#7FB77E",
-                        backgroundColor:
-                          formData.flow === flow ? "#7FB77E" : "transparent",
-                        "&:hover": {
-                          backgroundColor:
-                            formData.flow === flow
-                              ? "#6fa86e"
-                              : "rgba(127,183,126,0.1)",
-                        },
-                      }}
-                    >
-                      {flow}
-                    </Button>
-                  ))}
-                </Box>
-              </Grid>
-
-              {/* Notes */}
-              <Grid item xs={12}>
-                <Typography variant="subtitle1" sx={{ fontWeight: 500, mb: 1 }}>
-                  Additional Notes
-                </Typography>
-                <TextField
-                  fullWidth
-                  multiline
-                  rows={4}
-                  variant="outlined"
-                  value={formData.notes}
-                  onChange={(e) => handleChange("notes", e.target.value)}
-                  sx={{
-                    bgcolor: "#fff",
-                    borderRadius: 1,
-                    "& .MuiOutlinedInput-root": {
-                      "& fieldset": { borderColor: "#7FB77E" },
-                      "&:hover fieldset": { borderColor: "#6fa86e" },
-                      "&.Mui-focused fieldset": { borderColor: "#7FB77E" },
-                    },
-                  }}
-                />
-              </Grid>
+          <Grid container spacing={3}>
+            {/* Date Picker */}
+            <Grid item xs={12} sm={6}>
+              <TextField
+                label="Date"
+                type="date"
+                fullWidth
+                value={formData.date}
+                onChange={(e) => handleChange("date", e.target.value)}
+                InputLabelProps={{ shrink: true }}
+              />
             </Grid>
-          </Box>
+
+            {/* Symptom Selection */}
+            <Grid item xs={12} sm={6}>
+              <TextField
+                select
+                label="Symptom"
+                fullWidth
+                value={formData.symptom}
+                onChange={(e) => handleChange("symptom", e.target.value)}
+              >
+                {["Cramps", "Headache", "Fatigue", "Mood Swings", "Back Pain"].map(
+                  (sym) => (
+                    <MenuItem key={sym} value={sym}>
+                      {sym}
+                    </MenuItem>
+                  )
+                )}
+              </TextField>
+            </Grid>
+
+            {/* Severity Slider */}
+            <Grid item xs={12}>
+              <Typography variant="subtitle1" sx={{ fontWeight: 500, mb: 1 }}>
+                Severity
+              </Typography>
+              <Slider
+                value={formData.severity}
+                onChange={(e, val) => handleChange("severity", val)}
+                min={1}
+                max={5}
+                step={1}
+                marks
+                valueLabelDisplay="auto"
+                sx={{
+                  color: "#7FB77E",
+                }}
+              />
+            </Grid>
+
+            {/* Notes */}
+            <Grid item xs={12}>
+              <TextField
+                label="Additional Notes (optional)"
+                multiline
+                rows={4}
+                fullWidth
+                value={formData.notes}
+                onChange={(e) => handleChange("notes", e.target.value)}
+              />
+            </Grid>
+          </Grid>
 
           {/* Buttons */}
           <Box textAlign="center" sx={{ mt: 4 }}>

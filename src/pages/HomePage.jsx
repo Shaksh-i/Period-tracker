@@ -92,7 +92,7 @@ const HomePage = () => {
                 fontWeight: "bold",
                 "&:hover": { backgroundColor: "#ff94c2" },
               }}
-              onClick={() => navigate("/symptoms")}
+              onClick={() => navigate("/symptom")}
             >
               Symptom Tracker
             </Button>

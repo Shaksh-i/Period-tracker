@@ -1,5 +1,15 @@
-import React from "react";
-import { Box, Typography, Button, Paper } from "@mui/material";
+import React, { useEffect, useState } from "react";
+import {
+  Box,
+  Typography,
+  Button,
+  Paper,
+  TextField,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+} from "@mui/material";
 import {
   LineChart,
   Line,
@@ -10,31 +20,82 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import { useNavigate } from "react-router-dom";
-import Header from "../components/Header"; // ✅ added header import
+import Header from "../components/Header";
 
 const CyclePage = () => {
   const navigate = useNavigate();
+  const [cycles, setCycles] = useState([]);
+  const [openDialog, setOpenDialog] = useState(false);
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
+  const [notes, setNotes] = useState("");
 
-  // Dummy data (replace later with backend data)
-  const currentCycleData = [
-    { day: "Day 1", flow: 3 },
-    { day: "Day 2", flow: 4 },
-    { day: "Day 3", flow: 5 },
-    { day: "Day 4", flow: 3 },
-    { day: "Day 5", flow: 2 },
-  ];
+  // ✅ Fetch existing cycles from backend
+  useEffect(() => {
+    const fetchCycles = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        const res = await fetch("http://127.0.0.1:5000/api/cycles/", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        if (!res.ok) throw new Error("Failed to fetch cycles");
+        const data = await res.json();
+        setCycles(data);
+      } catch (err) {
+        console.error(err);
+      }
+    };
+    fetchCycles();
+  }, []);
 
-  const nextCyclePrediction = [
-    { day: "Day 1", prediction: 2 },
-    { day: "Day 2", prediction: 3 },
-    { day: "Day 3", prediction: 5 },
-    { day: "Day 4", prediction: 4 },
-    { day: "Day 5", prediction: 3 },
-  ];
+  // ✅ Submit new cycle
+  const handleAddCycle = async () => {
+    if (!startDate || !endDate) {
+      alert("Please fill both start and end dates!");
+      return;
+    }
+
+    try {
+      const token = localStorage.getItem("token");
+      const res = await fetch("http://127.0.0.1:5000/api/cycles/", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          start_date: startDate,
+          end_date: endDate,
+          notes,
+        }),
+      });
+
+      if (res.status === 401) {
+        alert("Unauthorized. Please log in again.");
+        navigate("/login");
+        return;
+      }
+
+      if (!res.ok) throw new Error("Failed to add cycle");
+
+      const newCycle = await res.json();
+      setCycles((prev) => [...prev, newCycle]);
+      setOpenDialog(false);
+      setStartDate("");
+      setEndDate("");
+      setNotes("");
+      alert("Cycle added successfully!");
+    } catch (err) {
+      console.error(err);
+      alert("Error adding cycle log");
+    }
+  };
 
   return (
     <>
-      <Header /> {/* ✅ Added reusable Header */}
+      <Header />
       <Box
         sx={{
           width: "100vw",
@@ -44,10 +105,9 @@ const CyclePage = () => {
           flexDirection: "column",
           alignItems: "center",
           py: 4,
-          overflowX: "hidden",
         }}
       >
-        {/* Header Title */}
+        {/* Page Title */}
         <Typography
           variant="h4"
           sx={{ mb: 3, fontWeight: "bold", color: "#ff7eb9" }}
@@ -55,20 +115,20 @@ const CyclePage = () => {
           Your Cycle Overview
         </Typography>
 
-        {/* Current Cycle Chart */}
+        {/* Cycle Log Chart */}
         <Paper elevation={3} sx={{ width: "80%", p: 3, mb: 4 }}>
           <Typography variant="h6" sx={{ mb: 2, color: "#333" }}>
-            Flow Intensity Over Days
+            Cycle History
           </Typography>
           <ResponsiveContainer width="100%" height={300}>
-            <LineChart data={currentCycleData}>
+            <LineChart data={cycles}>
               <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="day" />
+              <XAxis dataKey="start_date" />
               <YAxis />
               <Tooltip />
               <Line
                 type="monotone"
-                dataKey="flow"
+                dataKey="id"
                 stroke="#ff7eb9"
                 strokeWidth={3}
               />
@@ -76,29 +136,7 @@ const CyclePage = () => {
           </ResponsiveContainer>
         </Paper>
 
-        {/* Expected Next Cycle Chart */}
-        <Paper elevation={3} sx={{ width: "80%", p: 3, mb: 4 }}>
-          <Typography variant="h6" sx={{ mb: 2, color: "#333" }}>
-            Expected Next Cycle Prediction
-          </Typography>
-          <ResponsiveContainer width="100%" height={300}>
-            <LineChart data={nextCyclePrediction}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="day" />
-              <YAxis />
-              <Tooltip />
-              <Line
-                type="monotone"
-                dataKey="prediction"
-                stroke="#ff7eb9"
-                strokeDasharray="5 5"
-                strokeWidth={3}
-              />
-            </LineChart>
-          </ResponsiveContainer>
-        </Paper>
-
-        {/* Buttons */}
+        {/* Action Buttons */}
         <Box sx={{ display: "flex", gap: 2 }}>
           <Button
             variant="contained"
@@ -108,6 +146,7 @@ const CyclePage = () => {
               fontWeight: "bold",
               "&:hover": { backgroundColor: "#ff94c2" },
             }}
+            onClick={() => setOpenDialog(true)}
           >
             Add Cycle Log
           </Button>
@@ -125,6 +164,62 @@ const CyclePage = () => {
             ← Back to Home Page
           </Button>
         </Box>
+
+        {/* Add Cycle Dialog */}
+        <Dialog open={openDialog} onClose={() => setOpenDialog(false)}>
+          <DialogTitle sx={{ color: "#ff7eb9", fontWeight: "bold" }}>
+            Add New Cycle Log
+          </DialogTitle>
+          <DialogContent>
+            <TextField
+              fullWidth
+              label="Start Date"
+              type="date"
+              value={startDate}
+              onChange={(e) => setStartDate(e.target.value)}
+              sx={{ mt: 2 }}
+              InputLabelProps={{ shrink: true }}
+            />
+            <TextField
+              fullWidth
+              label="End Date"
+              type="date"
+              value={endDate}
+              onChange={(e) => setEndDate(e.target.value)}
+              sx={{ mt: 2 }}
+              InputLabelProps={{ shrink: true }}
+            />
+            <TextField
+              fullWidth
+              label="Notes (optional)"
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              multiline
+              rows={2}
+              sx={{ mt: 2 }}
+            />
+          </DialogContent>
+          <DialogActions>
+            <Button
+              onClick={() => setOpenDialog(false)}
+              sx={{ color: "#ff7eb9", fontWeight: "bold" }}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="contained"
+              sx={{
+                backgroundColor: "#ff7eb9",
+                color: "#fff",
+                fontWeight: "bold",
+                "&:hover": { backgroundColor: "#ff94c2" },
+              }}
+              onClick={handleAddCycle}
+            >
+              Save
+            </Button>
+          </DialogActions>
+        </Dialog>
       </Box>
     </>
   );

@@ -10,7 +10,9 @@ const DashboardPage = () => {
       sx={{
         width: "100vw",
         height: "100vh",
-        bgcolor: "#fff",
+        background: `
+          linear-gradient(135deg, #e6fff5 0%, #ccfff0 40%, #f0fff9 100%)
+        `,
         display: "flex",
         flexDirection: "column",
         overflowX: "hidden",
@@ -20,7 +22,8 @@ const DashboardPage = () => {
       <AppBar
         position="static"
         sx={{
-          bgcolor: "#ff7eb9",
+          bgcolor: "rgba(255, 126, 185, 0.9)",
+          backdropFilter: "blur(10px)",
           width: "100%",
           boxShadow: "none",
         }}
@@ -100,37 +103,58 @@ const DashboardPage = () => {
           flexDirection: "column",
           px: 2,
           textAlign: "center",
+          position: "relative",
         }}
       >
-        <Typography
-          variant="h4"
+        {/* Glass effect container */}
+        <Box
           sx={{
-            fontWeight: "bold",
-            color: "#333",
-            mb: 2,
-            fontFamily: "'Poppins', sans-serif",
+            background: "rgba(255, 255, 255, 0.8)",
+            backdropFilter: "blur(15px)",
+            borderRadius: "24px",
+            padding: "40px 60px",
+            boxShadow: "0 8px 30px rgba(0, 0, 0, 0.1)",
+            maxWidth: "700px",
           }}
         >
-          Welcome to <span style={{ color: "#ff7eb9", fontStyle: "italic" }}>HerSync</span>
-        </Typography>
+          <Typography
+            variant="h4"
+            sx={{
+              fontWeight: "bold",
+              color: "#333",
+              mb: 2,
+              fontFamily: "'Poppins', sans-serif",
+            }}
+          >
+            Welcome to{" "}
+            <span style={{ color: "#ff7eb9", fontStyle: "italic" }}>HerSync</span>
+          </Typography>
 
-        <Typography
-          variant="body1"
-          sx={{
-            color: "#555",
-            maxWidth: "600px",
-            fontFamily: "'Poppins', sans-serif",
-          }}
-        >
-          Track your cycle, predict ovulation, and get personalized health insights.
-        </Typography>
+          <Typography
+            variant="body1"
+            sx={{
+              color: "#555",
+              maxWidth: "600px",
+              fontFamily: "'Poppins', sans-serif",
+              fontSize: "1.1rem",
+              lineHeight: 1.8,
+            }}
+          >
+            <i>
+              "Because your body’s rhythm deserves attention, not confusion —  
+              track your flow, understand your mood, and embrace every phase
+              with confidence."
+            </i>
+          </Typography>
+        </Box>
       </Box>
 
       {/* Footer */}
       <Box
         sx={{
           py: 2,
-          bgcolor: "#fff3f8",
+          bgcolor: "rgba(255, 255, 255, 0.6)",
+          backdropFilter: "blur(8px)",
           textAlign: "center",
           width: "100%",
         }}

@@ -4,21 +4,44 @@ import { useNavigate } from "react-router-dom";
 
 const LoginPage = () => {
   const navigate = useNavigate();
+  const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  const handleLogin = () => {
-    if (!email || !password) {
-      alert("Please enter both email and password!");
+  const handleLogin = async () => {
+    if (!username || !email || !password) {
+      alert("Please enter username, email, and password!");
       return;
     }
 
-    // Extract name from email (e.g., shakshi@gmail.com → Shakshi)
-    const namePart = email.split("@")[0];
-    const userName = namePart.charAt(0).toUpperCase() + namePart.slice(1);
+    try {
+      const response = await fetch("http://127.0.0.1:5000/api/login/", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          username,
+          email,
+          password,
+        }),
+      });
 
-    // Navigate to HomePage and send username + fromSignup = false
-    navigate("/home", { state: { fromSignup: false, userName } });
+      const data = await response.json();
+
+      if (response.ok) {
+        alert("Login successful!");
+        // Save JWT token if backend returns it
+        if (data.access_token) {
+          localStorage.setItem("token", data.access_token);
+        }
+
+        navigate("/home", { state: { fromSignup: false, userName: username } });
+      } else {
+        alert(data.msg || "Login failed!");
+      }
+    } catch (error) {
+      console.error("Error logging in:", error);
+      alert("Something went wrong. Please try again.");
+    }
   };
 
   return (
@@ -33,7 +56,6 @@ const LoginPage = () => {
         flexDirection: "column",
       }}
     >
-      {/* App Name */}
       <Typography
         variant="h5"
         sx={{ fontWeight: "bold", color: "#ff7eb9", mb: 2 }}
@@ -41,7 +63,6 @@ const LoginPage = () => {
         Period Tracker & Care App
       </Typography>
 
-      {/* Login Box */}
       <Paper
         elevation={3}
         sx={{
@@ -59,6 +80,15 @@ const LoginPage = () => {
           Login
         </Typography>
 
+        <TextField
+          fullWidth
+          label="Username"
+          variant="outlined"
+          size="small"
+          value={username}
+          onChange={(e) => setUsername(e.target.value)}
+          sx={{ mb: 2, bgcolor: "#fff", borderRadius: 1 }}
+        />
         <TextField
           fullWidth
           label="Email"
